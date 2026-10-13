@@ -163,17 +163,45 @@ footer {
   font-size: 13px;
 }
 
+
 @media print {
   body {
     background: white;
   }
 
-  header,
-  nav,
-  main,
-  footer {
-    display: none !important;
+  body * {
+    visibility: hidden;
   }
+
+  body.skrivut #utskriftsyta,
+  body.skrivut #utskriftsyta * {
+    visibility: visible;
+  }
+
+  body.skrivut #utskriftsyta {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .utskriftskort {
+    display: block;
+    width: 90%;
+    min-height: 220px;
+    margin: 15px auto;
+    padding: 20px;
+    border: 2px dashed #888;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .utskriftskort h2 {
+    color: black;
+  }
+}
 
   body.skrivut #utskriftsyta {
     display: block !important;
