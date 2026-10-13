@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -14,26 +13,30 @@
   </header>
 
   <nav>
-    <button onclick="visa('partier')">Partier</button>
-    <button onclick="visa('utskrift')">Skriv ut</button>
-    <button onclick="visa('rostning')">Röstning</button>
-    <button onclick="visa('resultat')">Resultat</button>
+    <button type="button" onclick="visa('partier')">Partier</button>
+    <button type="button" onclick="visa('utskrift')">Skriv ut</button>
+    <button type="button" onclick="visa('rostning')">Röstning</button>
+    <button type="button" onclick="visa('resultat')">Resultat</button>
   </nav>
 
   <main>
     <section id="partier" class="sida">
       <h2>Förbered lekvalet</h2>
+
       <label>Valets namn
         <input id="valnamn" value="Höstlovsvalet">
       </label>
 
       <h3>Lägg till parti</h3>
+
       <label>Partiets namn
-        <input id="partinamn" placeholder="Till exempel Skogspartiet">
+        <input id="partinamn" placeholder="Skogspartiet">
       </label>
+
       <label>Logotyp eller symbol
         <input id="symbol" value="🌳">
       </label>
+
       <label>Valtyp
         <select id="valtyp">
           <option value="Riksdag">🟡 Riksdag</option>
@@ -41,60 +44,117 @@
           <option value="Kommun">⚪ Kommun</option>
         </select>
       </label>
-      <button onclick="laggTillParti()">Lägg till parti</button>
+
+      <button type="button" onclick="laggTillParti()">
+        Lägg till parti
+      </button>
+
       <div id="partilista"></div>
 
       <h3>Skapa valkort</h3>
+
       <label>Väljarens namn eller smeknamn
         <input id="valjarnamn" placeholder="Väljare 1">
       </label>
+
       <label>Valkortets kod
         <input id="valjarkod" placeholder="V001">
       </label>
-      <button onclick="laggTillValjare()">Skapa valkort</button>
+
+      <button type="button" onclick="laggTillValjare()">
+        Skapa valkort
+      </button>
+
       <div id="valjarlista"></div>
     </section>
 
     <section id="utskrift" class="sida dold">
       <h2>Skriv ut</h2>
-      <p>Valsedlarna är märkta som lekval och kan inte användas i officiella val.</p>
-      <button onclick="skrivUtValsedlar()">Skriv ut valsedlar</button>
-      <button onclick="skrivUtValkort()">Skriv ut valkort</button>
+
+      <p>
+        Alla kort är för lekval och gäller inte vid allmänna val.
+      </p>
+
+      <button type="button" onclick="skrivUtValsedlar()">
+        Skriv ut valsedlar – 2 av varje parti
+      </button>
+
+      <button type="button" onclick="skrivUtValkort()">
+        Skriv ut valkort
+      </button>
+
+      <p id="utskriftsmeddelande" role="status"></p>
       <div id="utskriftsyta"></div>
     </section>
 
     <section id="rostning" class="sida dold">
       <h2>Ta emot röster</h2>
-      <p>Skanna valkortet först. Skanna sedan valsedlarna.</p>
+
+      <p>
+        Skanna valkortet först. Skanna sedan en valsedel för
+        varje valtyp.
+      </p>
+
       <label>Valkortets streckkod
-        <input id="skannaValjare" placeholder="Skanna och tryck Enter">
+        <input id="skannaValjare"
+               placeholder="Skanna och tryck Enter"
+               autocomplete="off">
       </label>
-      <button onclick="valjValjare()">Kontrollera valkort</button>
-      <p id="valjarstatus"></p>
+
+      <button type="button" onclick="valjValjare()">
+        Kontrollera valkort
+      </button>
+
+      <p id="valjarstatus" role="status"></p>
 
       <label>Valsedelns streckkod
-        <input id="skannaValsedel" placeholder="Skanna valsedel">
+        <input id="skannaValsedel"
+               placeholder="Skanna och tryck Enter"
+               autocomplete="off">
       </label>
-      <button onclick="registreraRost()">Registrera valsedel</button>
-      <p id="roststatus"></p>
-      <button onclick="klarMedValjare()">Klart med väljaren</button>
+
+      <button type="button" onclick="registreraRost()">
+        Registrera valsedel
+      </button>
+
+      <p id="roststatus" role="status"></p>
+
+      <button type="button" onclick="klarMedValjare()">
+        Klart med väljare
+      </button>
+
       <hr>
-      <p id="rostningsstatus"></p>
-      <button onclick="stangVallokal()">Stäng vallokalen</button>
+
+      <p id="rostningsstatus" role="status"></p>
+
+      <button type="button" onclick="stangVallokal()">
+        Stäng vallokalen
+      </button>
     </section>
 
     <section id="resultat" class="sida dold">
       <h2>Valresultat</h2>
-      <button id="raknaKnapp" onclick="raknaRoster()" disabled>
+
+      <p>Resultatet gäller endast detta lekval.</p>
+
+      <button id="raknaKnapp"
+              type="button"
+              onclick="raknaRoster()"
+              disabled>
         RÄKNA RÖSTERNA
       </button>
+
       <div id="diagram"></div>
-      <button onclick="sparaResultat()">Spara resultat som fil</button>
+
+      <button type="button" onclick="sparaResultat()">
+        Spara resultat som fil
+      </button>
     </section>
   </main>
 
   <footer>Igelkotts Valsystem · För lekval</footer>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="app.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
