@@ -1,8 +1,4 @@
-```css
-/* =====================================
-   IGELKOTTS VALSYSTEM
-   LEKVAL – EJ GILTIGT I ALLMÄNNA VAL
-   ===================================== */
+/* IGELKOTTS VALSYSTEM – LEKVAL */
 
 * {
   box-sizing: border-box;
@@ -13,7 +9,6 @@
   --morkgron: #17452e;
   --ljusgron: #eaf5ed;
   --bakgrund: #f3f6f3;
-  --vit: #ffffff;
   --text: #24332a;
   --kant: #cbd8ce;
   --rod: #a51d24;
@@ -41,7 +36,6 @@ header h1 {
 
 header p {
   display: inline-block;
-  margin: 4px 0 0;
   padding: 7px 12px;
   border: 2px solid white;
   border-radius: 6px;
@@ -55,13 +49,13 @@ nav {
   gap: 8px;
   padding: 14px;
   background: white;
-  border-bottom: 1px solid var(--kant);
 }
 
 button {
-  border: none;
-  border-radius: 7px;
+  margin: 3px;
   padding: 11px 16px;
+  border: 0;
+  border-radius: 7px;
   background: var(--gron);
   color: white;
   font-size: 1rem;
@@ -84,25 +78,23 @@ main {
 }
 
 .sida {
-  background: var(--vit);
+  padding: clamp(16px, 3vw, 28px);
   border: 1px solid var(--kant);
   border-radius: 12px;
-  padding: clamp(16px, 3vw, 28px);
-  box-shadow: 0 3px 12px #0000000a;
+  background: white;
 }
 
 .dold {
   display: none !important;
 }
 
-h2 {
+h2,
+h3 {
   color: var(--morkgron);
-  margin-top: 0;
 }
 
-h3 {
-  margin-top: 26px;
-  color: var(--morkgron);
+h2 {
+  margin-top: 0;
 }
 
 label {
@@ -128,7 +120,6 @@ select {
 input:focus,
 select:focus {
   outline: 3px solid #8bc6a0;
-  outline-offset: 1px;
 }
 
 #partilista,
@@ -167,32 +158,11 @@ select:focus {
 }
 
 .varning {
+  padding: 6px;
+  border: 2px solid var(--rod);
   color: var(--rod);
   font-weight: bold;
-  border: 2px solid var(--rod);
-  padding: 8px;
   text-align: center;
-}
-
-.utskriftskort {
-  margin: 18px 0;
-  padding: 24px;
-  border: 2px dashed #555;
-  border-radius: 8px;
-  text-align: center;
-  background: white;
-  color: #000;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.utskriftskort h2 {
-  color: #000;
-}
-
-.utskriftskort .streckkod-svg {
-  max-width: 360px;
-  min-height: 60px;
 }
 
 #roststatus,
@@ -223,14 +193,12 @@ select:focus {
 
 .resultatstapel {
   height: 100%;
-  min-width: 0;
   background: var(--gron);
-  transition: width 0.3s ease;
 }
 
 hr {
   margin: 24px 0;
-  border: none;
+  border: 0;
   border-top: 1px solid var(--kant);
 }
 
@@ -238,34 +206,95 @@ footer {
   padding: 20px;
   text-align: center;
   color: #526258;
-  font-size: 0.9rem;
 }
 
-/* =====================================
-   UTSKRIFT
-   ===================================== */
+/* Utskriftskort */
+
+.utskriftssida {
+  display: none;
+}
+
+.utskriftskort {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 5mm;
+  border: 1px dashed #555;
+  background: white;
+  color: black;
+  text-align: center;
+}
+
+.utskriftskort h2 {
+  margin: 3mm 0;
+  color: black;
+  font-size: 17pt;
+  overflow-wrap: anywhere;
+}
+
+.utskriftskort p {
+  margin: 2mm 0;
+}
+
+.utskriftskort .partisymbol {
+  margin: 2mm 0;
+  font-size: 30pt;
+}
+
+.utskriftskort .streckkod-svg {
+  width: 82mm;
+  max-width: 100%;
+  height: auto;
+  margin: 4mm auto;
+}
+
+.utskriftskort small {
+  font-size: 8pt;
+}
+
+/* A4 med fyra A6-liknande kort */
 
 @media print {
   @page {
-    size: A4;
-    margin: 12mm;
+    size: A4 portrait;
+    margin: 0;
   }
 
   html,
   body {
-    width: 100% !important;
+    width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
-    color: black !important;
   }
 
-  /* Dölj sidan som vanligtvis visas på skärmen. */
   body * {
     visibility: hidden !important;
   }
 
-  /* Visa endast det innehåll som app.js skapat för utskrift. */
+  /* Placera utskriften överst, oberoende av vanlig sidlayout. */
+  #utskrift,
+  #utskrift.dold {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+    visibility: visible !important;
+  }
+
+  #utskrift > *:not(#utskriftsyta) {
+    display: none !important;
+  }
+
   #utskriftsyta,
   #utskriftsyta * {
     visibility: visible !important;
@@ -273,64 +302,58 @@ footer {
 
   #utskriftsyta {
     display: block !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
+    position: static !important;
+    width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
-    background: white !important;
-    color: black !important;
+  }
+
+  .utskriftssida {
+    display: grid !important;
+    grid-template-columns: 105mm 105mm !important;
+    grid-template-rows: 148.5mm 148.5mm !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .utskriftssida:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   .utskriftskort {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    margin: 0 0 10mm !important;
-    padding: 10mm !important;
-    border: 2px dashed black !important;
+    display: flex !important;
+    width: 105mm !important;
+    height: 148.5mm !important;
+    margin: 0 !important;
+    padding: 5mm !important;
+    border: 1px dashed #555 !important;
     border-radius: 0 !important;
     background: white !important;
     color: black !important;
-    text-align: center !important;
-    break-inside: avoid !important;
     page-break-inside: avoid !important;
-    break-after: page;
-    page-break-after: always;
+    break-inside: avoid !important;
   }
 
-  .utskriftskort:last-child {
-    break-after: auto;
-    page-break-after: auto;
-  }
-
-  .utskriftskort h2,
-  .utskriftskort p,
-  .utskriftskort small,
-  .utskriftskort strong {
+  .utskriftskort h2 {
     color: black !important;
   }
 
   .utskriftskort .varning {
-    color: #a00000 !important;
-    border: 2px solid #a00000 !important;
+    border: 2px solid #a51d24 !important;
+    color: #a51d24 !important;
   }
 
   .utskriftskort .streckkod-svg {
     display: block !important;
-    width: 100% !important;
-    max-width: 100mm !important;
+    width: 82mm !important;
+    max-width: 100% !important;
     height: auto !important;
-    margin: 8mm auto !important;
-  }
-
-  button,
-  nav,
-  header,
-  footer {
-    display: none !important;
   }
 }
-```
