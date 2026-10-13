@@ -1,32 +1,51 @@
+```css
+/* =====================================
+   IGELKOTTS VALSYSTEM
+   LEKVAL – EJ GILTIGT I ALLMÄNNA VAL
+   ===================================== */
 
 * {
   box-sizing: border-box;
 }
 
+:root {
+  --gron: #246b45;
+  --morkgron: #17452e;
+  --ljusgron: #eaf5ed;
+  --bakgrund: #f3f6f3;
+  --vit: #ffffff;
+  --text: #24332a;
+  --kant: #cbd8ce;
+  --rod: #a51d24;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f1f6f2;
-  color: #203329;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bakgrund);
+  color: var(--text);
+  line-height: 1.5;
 }
 
 header {
-  background: #176b45;
+  background: var(--morkgron);
   color: white;
   text-align: center;
-  padding: 25px 12px;
+  padding: 24px 16px;
 }
 
 header h1 {
-  margin: 0;
-  font-size: 30px;
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 5vw, 2.5rem);
 }
 
 header p {
+  display: inline-block;
+  margin: 4px 0 0;
+  padding: 7px 12px;
+  border: 2px solid white;
+  border-radius: 6px;
   font-weight: bold;
-  font-size: 12px;
-  letter-spacing: 1px;
-  color: #ffe49a;
 }
 
 nav {
@@ -34,61 +53,61 @@ nav {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  padding: 12px;
-  background: #dcebe0;
+  padding: 14px;
+  background: white;
+  border-bottom: 1px solid var(--kant);
 }
 
 button {
-  border: 0;
-  border-radius: 8px;
-  padding: 12px 16px;
-  background: #176b45;
+  border: none;
+  border-radius: 7px;
+  padding: 11px 16px;
+  background: var(--gron);
   color: white;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  margin: 4px 0;
 }
 
 button:hover {
-  background: #0e5032;
+  background: var(--morkgron);
 }
 
 button:disabled {
-  background: #999;
+  background: #a6b0a8;
   cursor: not-allowed;
 }
 
 main {
-  max-width: 850px;
-  margin: 25px auto;
-  padding: 0 15px;
+  width: min(100% - 24px, 1000px);
+  margin: 24px auto;
 }
 
 .sida {
-  background: white;
-  padding: 22px;
-  margin-bottom: 20px;
-  border-radius: 14px;
-  box-shadow: 0 3px 12px #00000012;
+  background: var(--vit);
+  border: 1px solid var(--kant);
+  border-radius: 12px;
+  padding: clamp(16px, 3vw, 28px);
+  box-shadow: 0 3px 12px #0000000a;
 }
 
 .dold {
-  display: none;
+  display: none !important;
 }
 
 h2 {
-  color: #176b45;
+  color: var(--morkgron);
   margin-top: 0;
 }
 
 h3 {
-  margin-top: 25px;
+  margin-top: 26px;
+  color: var(--morkgron);
 }
 
 label {
   display: block;
-  margin: 15px 0;
+  margin: 16px 0;
   font-weight: bold;
 }
 
@@ -96,124 +115,222 @@ input,
 select {
   display: block;
   width: 100%;
-  max-width: 500px;
-  padding: 12px;
+  max-width: 520px;
   margin-top: 6px;
-  border: 1px solid #b7c8bc;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 12px;
+  border: 1px solid #9aaba0;
+  border-radius: 6px;
   background: white;
+  color: var(--text);
+  font: inherit;
+}
+
+input:focus,
+select:focus {
+  outline: 3px solid #8bc6a0;
+  outline-offset: 1px;
 }
 
 #partilista,
-#valjarlista,
-#diagram {
-  margin-top: 18px;
+#valjarlista {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 230px), 1fr)
+  );
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .partikort,
 .valjarkort {
-  background: #f5f8f5;
-  border: 1px solid #d5e2d8;
-  border-radius: 10px;
-  padding: 14px;
-  margin: 10px 0;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--kant);
+  border-radius: 9px;
+  background: var(--ljusgron);
+  overflow-wrap: anywhere;
 }
 
 .partisymbol {
-  font-size: 28px;
-}
-
-.streckkod {
-  font-family: monospace;
-  font-size: 16px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  padding: 12px;
-  margin: 10px 0;
-  background: #eee;
-  overflow-wrap: anywhere;
+  margin: 8px 0;
+  font-size: 2.4rem;
 }
 
 .streckkod-svg {
   display: block;
   width: 100%;
-  max-width: 360px;
+  max-width: 320px;
   height: auto;
   margin: 12px auto;
+  background: white;
 }
 
 .varning {
-  color: #a52d25;
+  color: var(--rod);
   font-weight: bold;
+  border: 2px solid var(--rod);
+  padding: 8px;
+  text-align: center;
+}
+
+.utskriftskort {
+  margin: 18px 0;
+  padding: 24px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  text-align: center;
+  background: white;
+  color: #000;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.utskriftskort h2 {
+  color: #000;
+}
+
+.utskriftskort .streckkod-svg {
+  max-width: 360px;
+  min-height: 60px;
+}
+
+#roststatus,
+#valjarstatus,
+#rostningsstatus {
+  margin: 12px 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--ljusgron);
+  overflow-wrap: anywhere;
+}
+
+#diagram {
+  margin-top: 20px;
 }
 
 .resultatrad {
-  margin: 15px 0;
+  margin: 14px 0;
 }
 
 .resultatbakgrund {
-  height: 22px;
-  background: #e5ece6;
-  border-radius: 6px;
+  height: 24px;
+  margin: 6px 0;
   overflow: hidden;
+  border-radius: 5px;
+  background: #e0e7e1;
 }
 
 .resultatstapel {
   height: 100%;
-  background: #23865b;
+  min-width: 0;
+  background: var(--gron);
+  transition: width 0.3s ease;
+}
+
+hr {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid var(--kant);
 }
 
 footer {
+  padding: 20px;
   text-align: center;
-  padding: 25px 12px;
-  color: #617168;
-  font-size: 13px;
+  color: #526258;
+  font-size: 0.9rem;
 }
 
-@page {
-  margin: 10mm;
-}
+/* =====================================
+   UTSKRIFT
+   ===================================== */
 
 @media print {
-  body.skrivut {
-    background: white;
+  @page {
+    size: A4;
+    margin: 12mm;
   }
 
-  body.skrivut > * {
-    display: none !important;
+  html,
+  body {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
   }
 
-  body.skrivut #utskriftsyta {
+  /* Dölj sidan som vanligtvis visas på skärmen. */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Visa endast det innehåll som app.js skapat för utskrift. */
+  #utskriftsyta,
+  #utskriftsyta * {
+    visibility: visible !important;
+  }
+
+  #utskriftsyta {
     display: block !important;
-    position: static;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  body.skrivut #utskriftsyta * {
-    visibility: visible;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
   }
 
   .utskriftskort {
-    display: block;
-    width: 100%;
-    min-height: 220px;
-    margin: 0 auto 12mm;
-    padding: 20px;
-    border: 2px dashed #888;
-    text-align: center;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 0 10mm !important;
+    padding: 10mm !important;
+    border: 2px dashed black !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: black !important;
+    text-align: center !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: page;
+    page-break-after: always;
   }
 
-  .utskriftskort h2 {
-    color: black;
+  .utskriftskort:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .utskriftskort h2,
+  .utskriftskort p,
+  .utskriftskort small,
+  .utskriftskort strong {
+    color: black !important;
+  }
+
+  .utskriftskort .varning {
+    color: #a00000 !important;
+    border: 2px solid #a00000 !important;
   }
 
   .utskriftskort .streckkod-svg {
-    max-width: 360px;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100mm !important;
+    height: auto !important;
+    margin: 8mm auto !important;
+  }
+
+  button,
+  nav,
+  header,
+  footer {
+    display: none !important;
   }
 }
-      
+```
