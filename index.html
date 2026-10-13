@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Igelkotts Valsystem</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🦔 Igelkotts Valsystem</h1>
+    <p>LEKVAL – EJ GILTIGT I ALLMÄNNA VAL</p>
+  </header>
+
+  <nav>
+    <button onclick="visa('partier')">Partier</button>
+    <button onclick="visa('utskrift')">Skriv ut</button>
+    <button onclick="visa('rostning')">Röstning</button>
+    <button onclick="visa('resultat')">Resultat</button>
+  </nav>
+
+  <main>
+    <section id="partier" class="sida">
+      <h2>Förbered lekvalet</h2>
+      <label>Valets namn
+        <input id="valnamn" value="Höstlovsvalet">
+      </label>
+
+      <h3>Lägg till parti</h3>
+      <label>Partiets namn
+        <input id="partinamn" placeholder="Till exempel Skogspartiet">
+      </label>
+      <label>Logotyp eller symbol
+        <input id="symbol" value="🌳">
+      </label>
+      <label>Valtyp
+        <select id="valtyp">
+          <option value="Riksdag">🟡 Riksdag</option>
+          <option value="Region">🔵 Region</option>
+          <option value="Kommun">⚪ Kommun</option>
+        </select>
+      </label>
+      <button onclick="laggTillParti()">Lägg till parti</button>
+      <div id="partilista"></div>
+
+      <h3>Skapa valkort</h3>
+      <label>Väljarens namn eller smeknamn
+        <input id="valjarnamn" placeholder="Väljare 1">
+      </label>
+      <label>Valkortets kod
+        <input id="valjarkod" placeholder="V001">
+      </label>
+      <button onclick="laggTillValjare()">Skapa valkort</button>
+      <div id="valjarlista"></div>
+    </section>
+
+    <section id="utskrift" class="sida dold">
+      <h2>Skriv ut</h2>
+      <p>Valsedlarna är märkta som lekval och kan inte användas i officiella val.</p>
+      <button onclick="skrivUtValsedlar()">Skriv ut valsedlar</button>
+      <button onclick="skrivUtValkort()">Skriv ut valkort</button>
+      <div id="utskriftsyta"></div>
+    </section>
+
+    <section id="rostning" class="sida dold">
+      <h2>Ta emot röster</h2>
+      <p>Skanna valkortet först. Skanna sedan valsedlarna.</p>
+      <label>Valkortets streckkod
+        <input id="skannaValjare" placeholder="Skanna och tryck Enter">
+      </label>
+      <button onclick="valjValjare()">Kontrollera valkort</button>
+      <p id="valjarstatus"></p>
+
+      <label>Valsedelns streckkod
+        <input id="skannaValsedel" placeholder="Skanna valsedel">
+      </label>
+      <button onclick="registreraRost()">Registrera valsedel</button>
+      <p id="roststatus"></p>
+      <button onclick="klarMedValjare()">Klart med väljaren</button>
+      <hr>
+      <p id="rostningsstatus"></p>
+      <button onclick="stangVallokal()">Stäng vallokalen</button>
+    </section>
+
+    <section id="resultat" class="sida dold">
+      <h2>Valresultat</h2>
+      <button id="raknaKnapp" onclick="raknaRoster()" disabled>
+        RÄKNA RÖSTERNA
+      </button>
+      <div id="diagram"></div>
+      <button onclick="sparaResultat()">Spara resultat som fil</button>
+    </section>
+  </main>
+
+  <footer>Igelkotts Valsystem · För lekval</footer>
+  <script src="app.js"></script>
+</body>
+</html>
