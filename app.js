@@ -1,4 +1,4 @@
-```javascript
+
 let partier = JSON.parse(localStorage.getItem("partier") || "[]");
 let valjare = JSON.parse(localStorage.getItem("valjare") || "[]");
 let roster = JSON.parse(localStorage.getItem("roster") || "[]");
@@ -536,4 +536,4 @@ document.addEventListener("DOMContentLoaded", () => {
   visaPartier();
   uppdateraStatus();
 });
-```
+
