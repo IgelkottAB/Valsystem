@@ -1,4 +1,4 @@
-
+```css
 * {
   box-sizing: border-box;
 }
@@ -135,6 +135,14 @@ select {
   overflow-wrap: anywhere;
 }
 
+.streckkod-svg {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  margin: 12px auto;
+}
+
 .varning {
   color: #a52d25;
   font-weight: bold;
@@ -163,34 +171,36 @@ footer {
   font-size: 13px;
 }
 
+@page {
+  margin: 10mm;
+}
 
 @media print {
-  body {
+  body.skrivut {
     background: white;
   }
 
-  body * {
-    visibility: hidden;
-  }
-
-  body.skrivut #utskriftsyta,
-  body.skrivut #utskriftsyta * {
-    visibility: visible;
+  body.skrivut > * {
+    display: none !important;
   }
 
   body.skrivut #utskriftsyta {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
+    position: static;
     width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body.skrivut #utskriftsyta * {
+    visibility: visible;
   }
 
   .utskriftskort {
     display: block;
-    width: 90%;
+    width: 100%;
     min-height: 220px;
-    margin: 15px auto;
+    margin: 0 auto 12mm;
     padding: 20px;
     border: 2px dashed #888;
     text-align: center;
@@ -201,23 +211,9 @@ footer {
   .utskriftskort h2 {
     color: black;
   }
-}
 
-  body.skrivut #utskriftsyta {
-    display: block !important;
-  }
-
-  .utskriftskort {
-    width: 90%;
-    min-height: 220px;
-    margin: 15px auto;
-    padding: 20px;
-    border: 2px dashed #888;
-    text-align: center;
-    break-inside: avoid;
-  }
-
-  .utskriftskort h2 {
-    color: black;
+  .utskriftskort .streckkod-svg {
+    max-width: 360px;
   }
 }
+```
