@@ -1,3 +1,4 @@
+
 "use strict";
 
 const typer = ["Riksdag", "Region", "Kommun"];
@@ -49,7 +50,6 @@ function visa(id) {
   });
 
   const sida = document.getElementById(id);
-
   if (sida) sida.classList.remove("dold");
 
   if (id === "partier") visaPartier();
@@ -85,11 +85,9 @@ function laggTillParti() {
     "P" + Math.random().toString(36).slice(2, 9).toUpperCase();
 
   partier.push({ id, namn, symbol, typ });
-
   spara();
 
   document.getElementById("partinamn").value = "";
-
   visaPartier();
 }
 
@@ -102,7 +100,6 @@ function taBortParti(id) {
   if (!confirm("Ta bort partiet?")) return;
 
   partier = partier.filter(p => p.id !== id);
-
   spara();
   visaPartier();
 }
@@ -131,17 +128,11 @@ function laggTillValjare() {
     return;
   }
 
-  valjare.push({
-    namn,
-    kod,
-    rostat: false
-  });
-
+  valjare.push({ namn, kod, rostat: false });
   spara();
 
   document.getElementById("valjarnamn").value = "";
   document.getElementById("valjarkod").value = "";
-
   visaPartier();
 }
 
@@ -182,7 +173,7 @@ function skapaStreckkoder(rot = document) {
         background: "#ffffff",
         lineColor: "#000000"
       });
-    } catch (fel) {
+    } catch {
       const text = document.createElement("p");
       text.textContent = "Streckkodskod: " + kod;
       svg.replaceWith(text);
@@ -224,9 +215,9 @@ function visaPartier() {
   }
 }
 
-/* SKAPA A6-KORT PÅ A4-ARK */
+/* UTSKRIFT */
 
-function byggUtskrift(kort) {
+function byggUtskrift(kort, antalPerSida, storlek) {
   const yta = document.getElementById("utskriftsyta");
   const meddelande =
     document.getElementById("utskriftsmeddelande");
@@ -234,33 +225,27 @@ function byggUtskrift(kort) {
   yta.replaceChildren();
 
   if (kort.length === 0) {
-    if (meddelande) {
-      meddelande.textContent = "Det finns inget att skriva ut.";
-    }
+    meddelande.textContent = "Det finns inget att skriva ut.";
     return false;
   }
 
-  /* Fyra kort per A4-ark. */
-  for (let i = 0; i < kort.length; i += 4) {
+  for (let i = 0; i < kort.length; i += antalPerSida) {
     const sida = document.createElement("div");
-    sida.className = "utskriftssida";
-
-    sida.innerHTML = kort.slice(i, i + 4).join("");
-
+    sida.className = "utskriftssida " + storlek;
+    sida.innerHTML = kort.slice(i, i + antalPerSida).join("");
     yta.appendChild(sida);
   }
 
   skapaStreckkoder(yta);
 
-  if (meddelande) {
-    meddelande.textContent =
-      "Utskriften är förberedd. Välj A4 och 100 % skala.";
-  }
+  meddelande.textContent =
+    "Utskriften är förberedd. Välj A4 och 100 % skala.";
 
+  skrivUt();
   return true;
 }
 
-/* TVÅ VALSEDLAR PER PARTI */
+/* A5 – TVÅ VALSEDLAR PER A4 */
 
 function skrivUtValsedlar() {
   if (partier.length === 0) {
@@ -301,12 +286,10 @@ function skrivUtValsedlar() {
     }
   });
 
-  if (byggUtskrift(kort)) {
-    skrivUt();
-  }
+  byggUtskrift(kort, 2, "a5");
 }
 
-/* SKRIV UT VALKORT */
+/* A7 – ÅTTA VALKORT PER A4 */
 
 function skrivUtValkort() {
   if (valjare.length === 0) {
@@ -324,7 +307,6 @@ function skrivUtValkort() {
       <h2>${skydda(valnamn)}</h2>
 
       <p>Väljare:</p>
-
       <h2>${skydda(v.namn)}</h2>
 
       ${streckkodHtml(v.kod)}
@@ -333,12 +315,8 @@ function skrivUtValkort() {
     </article>
   `);
 
-  if (byggUtskrift(kort)) {
-    skrivUt();
-  }
+  byggUtskrift(kort, 8, "a7");
 }
-
-/* ÖPPNA UTSKRIFT EFTER ATT KORTEN RITATS */
 
 function skrivUt() {
   requestAnimationFrame(() => {
@@ -484,7 +462,7 @@ function klarMedValjare() {
   document.getElementById("skannaValjare").focus();
 }
 
-/* VALLokalens STATUS */
+/* STATUS */
 
 function uppdateraStatus() {
   const status = document.getElementById("rostningsstatus");
@@ -518,7 +496,7 @@ function stangVallokal() {
   uppdateraStatus();
 }
 
-/* RÖSTRÄKNING */
+/* RESULTAT */
 
 function raknaRoster() {
   if (!vallokalStangd) {
@@ -578,7 +556,7 @@ function visaResultat() {
   diagram.innerHTML = html || "<p>Inga partier finns ännu.</p>";
 }
 
-/* SPARA RESULTAT SOM JSON-FIL */
+/* SPARA RESULTAT */
 
 function sparaResultat() {
   if (!vallokalStangd) {
@@ -624,7 +602,7 @@ function sparaResultat() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/* STARTA SYSTEMET OCH STÖD STRECKKODSLÄSARE */
+/* START */
 
 document.addEventListener("DOMContentLoaded", () => {
   visaPartier();
