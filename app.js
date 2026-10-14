@@ -1,133 +1,142 @@
+// ======================================================
+// IGELKOTTS VALSYSTEM
+// LEKVAL – EJ GILTIGT I ALLMÄNNA VAL
+// ======================================================
 
-"use strict";
+const PARTIER_KEY = "partier";
+const VALJARE_KEY = "valjare";
+const ROSTER_KEY = "roster";
+const VALLokal_KEY = "vallokalStangd";
 
-/* IGELKOTTS VALSYSTEM – LEKVAL */
+// ------------------------------------------------------
+// DATA
+// ------------------------------------------------------
 
-const typer = ["Riksdag", "Region", "Kommun"];
-
-/* SPARAD DATA */
-
-function hamtaLista(nyckel) {
-  try {
-    const data = JSON.parse(localStorage.getItem(nyckel) || "[]");
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
-let partier = hamtaLista("partier");
-let valjare = hamtaLista("valjare");
-let roster = hamtaLista("roster");
-
+let partier = JSON.parse(localStorage.getItem(PARTIER_KEY) || "[]");
+let valjare = JSON.parse(localStorage.getItem(VALJARE_KEY) || "[]");
+let roster = JSON.parse(localStorage.getItem(ROSTER_KEY) || "[]");
 let vallokalStangd =
-  localStorage.getItem("vallokalStangd") === "true";
+  localStorage.getItem(VALLokal_KEY) === "true";
 
 let aktuellValjare = null;
 let aktuellRost = [];
 let resultatKlart = false;
 
+
+// ------------------------------------------------------
+// SPARA
+// ------------------------------------------------------
+
 function spara() {
-  localStorage.setItem("partier", JSON.stringify(partier));
-  localStorage.setItem("valjare", JSON.stringify(valjare));
-  localStorage.setItem("roster", JSON.stringify(roster));
-  localStorage.setItem("vallokalStangd", String(vallokalStangd));
+  localStorage.setItem(PARTIER_KEY, JSON.stringify(partier));
+  localStorage.setItem(VALJARE_KEY, JSON.stringify(valjare));
+  localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+  localStorage.setItem(VALLokal_KEY, vallokalStangd);
 }
+
+
+// ------------------------------------------------------
+// SKYDDA TEXT
+// ------------------------------------------------------
 
 function skydda(text) {
-  return String(text ?? "").replace(/[&<>"']/g, tecken => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[tecken]);
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function kodForParti(p) {
-  return p.typ.toUpperCase() + "-" + p.id;
-}
 
-/* SIDNAVIGERING */
+// ------------------------------------------------------
+// VISA SEKTION
+// ------------------------------------------------------
 
 function visa(id) {
-  document.querySelectorAll(".sida").forEach(sida => {
-    sida.classList.add("dold");
+  document.querySelectorAll(".sektion").forEach(sektion => {
+    sektion.style.display = "none";
   });
 
-  const sida = document.getElementById(id);
+  const vald = document.getElementById(id);
 
-  if (sida) {
-    sida.classList.remove("dold");
+  if (vald) {
+    vald.style.display = "block";
   }
 
-  if (id === "partier") visaPartier();
-  if (id === "resultat") visaResultat();
-  if (id === "rostning") uppdateraStatus();
+  if (id === "partier") {
+    visaPartier();
+  }
+
+  if (id === "utskrift") {
+    visaUtskrift();
+  }
+
+  if (id === "rostning") {
+    uppdateraStatus();
+  }
+
+  if (id === "resultat") {
+    visaResultat();
+  }
 }
 
-/* PARTIER */
+
+// ------------------------------------------------------
+// PARTIER
+// ------------------------------------------------------
 
 function laggTillParti() {
-  const namn = document.getElementById("partinamn").value.trim();
+  const namnInput = document.getElementById("partinamn");
+  const symbolInput = document.getElementById("symbol");
+  const valtypInput = document.getElementById("valtyp");
 
-  const symbol =
-    document.getElementById("symbol").value.trim() || "★";
-
-  const typ = document.getElementById("valtyp").value;
+  const namn = namnInput?.value.trim();
+  const symbol = symbolInput?.value.trim();
+  const valtyp = valtypInput?.value;
 
   if (!namn) {
-    alert("Skriv partiets namn först!");
+    alert("Skriv ett partinamn.");
     return;
   }
 
-  if (vallokalStangd) {
-    alert("Vallokalen är stängd.");
+  if (!valtyp) {
+    alert("Välj vilken typ av val partiet ska delta i.");
     return;
   }
-
-  if (partier.some(p =>
-    p.namn.toLowerCase() === namn.toLowerCase() &&
-    p.typ === typ
-  )) {
-    alert("Partiet finns redan för den valtypen.");
-    return;
-  }
-
-  const id =
-    "P" + Math.random().toString(36).slice(2, 9).toUpperCase();
 
   partier.push({
-    id,
-    namn,
-    symbol,
-    typ
+    id: Date.now(),
+    namn: namn,
+    symbol: symbol || "",
+    valtyp: valtyp
   });
 
   spara();
 
-  document.getElementById("partinamn").value = "";
+  namnInput.value = "";
+  symbolInput.value = "";
 
   visaPartier();
 }
 
+
+// ------------------------------------------------------
+// TA BORT PARTI
+// ------------------------------------------------------
+
 function taBortParti(id) {
-  if (vallokalStangd) {
-    alert("Vallokalen är stängd.");
+  const parti = partier.find(p => p.id === id);
+
+  if (!parti) {
     return;
   }
 
-  if (roster.some(r => r.partiId === id)) {
-    alert("Partiet har redan fått röster och kan inte tas bort.");
-    return;
-  }
-
-  if (aktuellRost.some(r => r.partiId === id)) {
-    alert("Partiet finns i en pågående röstning.");
-    return;
-  }
-
-  if (!confirm("Vill du ta bort partiet?")) {
+  if (
+    !confirm(
+      `Ta bort partiet "${parti.namn}"?\n\nDetta tar bort partiet från lekvalet.`
+    )
+  ) {
     return;
   }
 
@@ -137,60 +146,130 @@ function taBortParti(id) {
   visaPartier();
 }
 
-/* VÄLJARE */
+
+// ------------------------------------------------------
+// VISA PARTIER OCH VÄLJARE
+// ------------------------------------------------------
+
+function visaPartier() {
+  const container = document.getElementById("partilista");
+
+  if (container) {
+    if (partier.length === 0) {
+      container.innerHTML = "<p>Inga partier tillagda ännu.</p>";
+    } else {
+      container.innerHTML = partier
+        .map(
+          p => `
+            <div class="parti">
+              <strong>${skydda(p.symbol)} ${skydda(p.namn)}</strong>
+              <span> – ${skydda(p.valtyp)}</span>
+              <button
+                type="button"
+                onclick="taBortParti(${p.id})">
+                Ta bort
+              </button>
+            </div>
+          `
+        )
+        .join("");
+    }
+  }
+
+  const valjarlista = document.getElementById("valjarlista");
+
+  if (valjarlista) {
+    if (valjare.length === 0) {
+      valjarlista.innerHTML = "<p>Inga väljare registrerade ännu.</p>";
+    } else {
+      valjarlista.innerHTML = valjare
+        .map(
+          v => `
+            <div class="valjare">
+              <strong>${skydda(v.namn)}</strong><br>
+              Lånekod/valjarkod:
+              <strong>${skydda(v.kod)}</strong><br>
+              Status:
+              ${v.rostat ? "✅ Har röstat" : "🕐 Har inte röstat"}
+              <br>
+
+              <button
+                type="button"
+                onclick="taBortValjare('${skydda(v.kod)}')"
+                ${v.rostat ? "disabled" : ""}>
+                Ta bort väljare
+              </button>
+            </div>
+          `
+        )
+        .join("");
+    }
+  }
+}
+
+
+// ------------------------------------------------------
+// LÄGG TILL VÄLJARE
+// ------------------------------------------------------
 
 function laggTillValjare() {
-  const namn =
-    document.getElementById("valjarnamn").value.trim();
+  const namnInput = document.getElementById("valjarnamn");
+  const kodInput = document.getElementById("valjarkod");
 
-  const kod = document.getElementById("valjarkod")
-    .value.trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9-]/g, "");
+  const namn = namnInput?.value.trim();
+  const kod = kodInput?.value.trim();
 
-  if (!namn || !kod) {
-    alert("Fyll i namn och kortkod!");
+  if (!namn) {
+    alert("Skriv väljarnas namn.");
     return;
   }
 
-  if (vallokalStangd) {
-    alert("Vallokalen är stängd.");
+  if (!kod) {
+    alert("Skriv eller skanna en valjarkod.");
     return;
   }
 
   if (valjare.some(v => v.kod === kod)) {
-    alert("Den kortkoden används redan.");
+    alert("Den valjarkoden finns redan.");
     return;
   }
 
   valjare.push({
-    namn,
-    kod,
+    id: Date.now(),
+    namn: namn,
+    kod: kod,
     rostat: false
   });
 
   spara();
 
-  document.getElementById("valjarnamn").value = "";
-  document.getElementById("valjarkod").value = "";
+  namnInput.value = "";
+  kodInput.value = "";
 
   visaPartier();
+
+  const status = document.getElementById("valjarstatus");
+
+  if (status) {
+    status.textContent =
+      `Väljaren ${namn} är registrerad.`;
+  }
 }
 
-/* NYTT: TA BORT VÄLJARE */
+
+// ------------------------------------------------------
+// TA BORT VÄLJARE
+// ------------------------------------------------------
 
 function taBortValjare(kod) {
-  if (vallokalStangd) {
-    alert("Vallokalen är stängd.");
-    return;
-  }
+  const valjareIndex = valjare.findIndex(v => v.kod === kod);
 
-  const v = valjare.find(x => x.kod === kod);
-
-  if (!v) {
+  if (valjareIndex === -1) {
     alert("Väljaren hittades inte.");
     return;
   }
+
+  const v = valjare[valjareIndex];
 
   if (v.rostat) {
     alert(
@@ -201,567 +280,883 @@ function taBortValjare(kod) {
 
   if (aktuellValjare && aktuellValjare.kod === kod) {
     alert(
-      "Väljaren håller på att rösta. Avsluta den pågående registreringen först."
+      "Den här väljaren håller på att rösta och kan inte tas bort just nu."
     );
     return;
   }
 
-  if (!confirm("Vill du ta bort väljaren " + v.namn + "?")) {
+  if (
+    !confirm(
+      `Ta bort väljaren "${v.namn}"?\n\nDet går inte att ångra.`
+    )
+  ) {
     return;
   }
 
-  valjare = valjare.filter(x => x.kod !== kod);
+  valjare.splice(valjareIndex, 1);
 
   spara();
   visaPartier();
-  uppdateraStatus();
-}
 
-/* STRECKKODER */
+  const status = document.getElementById("valjarstatus");
 
-function streckkodHtml(kod) {
-  return `
-    <svg class="streckkod-svg"
-         data-streckkod="${skydda(kod)}"
-         role="img"
-         aria-label="Streckkod"></svg>
-  `;
-}
-
-function skapaStreckkoder(rot = document) {
-  const element = rot.querySelectorAll("svg[data-streckkod]");
-
-  element.forEach(svg => {
-    const kod = svg.getAttribute("data-streckkod");
-
-    if (typeof window.JsBarcode !== "function") {
-      const text = document.createElement("p");
-
-      text.textContent = "Streckkodskod: " + kod;
-
-      svg.replaceWith(text);
-      return;
-    }
-
-    try {
-      window.JsBarcode(svg, kod, {
-        format: "CODE128",
-        displayValue: true,
-        font: "monospace",
-        fontSize: 11,
-        textMargin: 2,
-        height: 35,
-        margin: 3,
-        width: 1.5,
-        background: "#ffffff",
-        lineColor: "#000000"
-      });
-    } catch {
-      const text = document.createElement("p");
-
-      text.textContent = "Streckkodskod: " + kod;
-
-      svg.replaceWith(text);
-    }
-  });
-}
-
-/* VISA PARTIER OCH VÄLJARE */
-
-function visaPartier() {
-  const lista = document.getElementById("partilista");
-
-  if (lista) {
-    lista.innerHTML = partier.map(p => `
-      <div class="partikort">
-        <div class="partisymbol">
-          ${skydda(p.symbol)}
-        </div>
-
-        <strong>${skydda(p.namn)}</strong>
-
-        <p>${skydda(p.typ)}</p>
-
-        <button
-          type="button"
-          onclick="taBortParti('${skydda(p.id)}')">
-          Ta bort parti
-        </button>
-      </div>
-    `).join("");
-  }
-
-  const valjarlista = document.getElementById("valjarlista");
-
-  if (valjarlista) {
-    valjarlista.innerHTML = valjare.map(v => `
-      <div class="valjarkort">
-        <strong>${skydda(v.namn)}</strong>
-
-        ${streckkodHtml(v.kod)}
-
-        <p>
-          ${v.rostat ? "Har röstat" : "Inte röstat"}
-        </p>
-
-        <button
-          type="button"
-          onclick="taBortValjare('${skydda(v.kod)}')"
-          ${v.rostat || vallokalStangd ? "disabled" : ""}>
-          Ta bort väljare
-        </button>
-      </div>
-    `).join("");
-
-    skapaStreckkoder(valjarlista);
+  if (status) {
+    status.textContent =
+      `Väljaren ${v.namn} har tagits bort.`;
   }
 }
 
-/* UTSKRIFT */
 
-function byggUtskrift(kort, antalPerSida, storlek) {
-  const yta = document.getElementById("utskriftsyta");
+// ------------------------------------------------------
+// STRECKKOD – VÄLJARE
+// ------------------------------------------------------
 
+function skannaValjare() {
+  const input = document.getElementById("valjarkod");
+
+  if (!input) {
+    return;
+  }
+
+  input.focus();
+}
+
+
+// ------------------------------------------------------
+// STRECKKOD – VALSEDEL
+// ------------------------------------------------------
+
+function skannaValsedel() {
+  const input = document.getElementById("valsedel");
+
+  if (!input) {
+    return;
+  }
+
+  input.focus();
+}
+
+
+// ------------------------------------------------------
+// UTSKRIFT
+// ------------------------------------------------------
+
+function visaUtskrift() {
   const meddelande =
     document.getElementById("utskriftsmeddelande");
 
-  yta.replaceChildren();
-
-  if (kort.length === 0) {
+  if (meddelande) {
     meddelande.textContent =
-      "Det finns inget att skriva ut.";
-
-    return false;
+      "Välj vad du vill skriva ut.";
   }
-
-  for (let i = 0; i < kort.length; i += antalPerSida) {
-    const sida = document.createElement("div");
-
-    sida.className = "utskriftssida " + storlek;
-
-    sida.innerHTML =
-      kort.slice(i, i + antalPerSida).join("");
-
-    yta.appendChild(sida);
-  }
-
-  skapaStreckkoder(yta);
-
-  meddelande.textContent =
-    "Utskriften är förberedd. Välj A4 och 100 % skala.";
-
-  skrivUt();
-
-  return true;
 }
 
-/* A5 – TVÅ VALSEDLAR PER A4 */
 
-function skrivUtValsedlar() {
-  if (partier.length === 0) {
-    alert("Lägg till partier först!");
+// ------------------------------------------------------
+// BYGG UTSKRIFT
+// ------------------------------------------------------
+
+function byggUtskrift(kort, perSida, klass) {
+  const utskriftsyta =
+    document.getElementById("utskriftsyta");
+
+  if (!utskriftsyta) {
     return;
   }
 
-  const valnamn =
-    document.getElementById("valnamn").value.trim() || "Lekval";
+  utskriftsyta.innerHTML = "";
+
+  for (let i = 0; i < kort.length; i += perSida) {
+    const sida = document.createElement("div");
+
+    sida.className = `utskriftssida ${klass}`;
+
+    const grupp = kort.slice(i, i + perSida);
+
+    grupp.forEach(item => {
+      const kortElement = document.createElement("div");
+
+      kortElement.className = "utskriftskort";
+
+      kortElement.innerHTML = item;
+
+      sida.appendChild(kortElement);
+    });
+
+    utskriftsyta.appendChild(sida);
+  }
+}
+
+
+// ------------------------------------------------------
+// SKRIV UT VALSEDLAR
+// ------------------------------------------------------
+
+function skrivUtValsedlar() {
+  const typer = [
+    "Riksdag",
+    "Region",
+    "Kommun"
+  ];
 
   const kort = [];
 
-  partier.forEach(p => {
-    for (let exemplar = 0; exemplar < 2; exemplar++) {
+  typer.forEach(typ => {
+    const partierForTyp =
+      partier.filter(p => p.valtyp === typ);
+
+    partierForTyp.forEach(p => {
       kort.push(`
-        <article class="utskriftskort">
-          <p class="varning">
-            LEKVAL – EJ GILTIG VALSEDEL
-          </p>
+        <div class="valsedel">
+          <h2>LEKVAL</h2>
+          <h3>${skydda(typ)}</h3>
 
-          <h2>${skydda(valnamn)}</h2>
-
-          <div class="partisymbol">
+          <div class="valsedel-parti">
             ${skydda(p.symbol)}
+            ${skydda(p.namn)}
           </div>
 
-          <h2>${skydda(p.namn)}</h2>
+          <p>Markera ditt val.</p>
 
-          <p>${skydda(p.typ)}</p>
-
-          ${streckkodHtml(kodForParti(p))}
+          <div class="ruta"></div>
 
           <small>
-            Valsedelns kod · LEKVAL · Klipp längs kanten
+            EJ GILTIGT I ALLMÄNNA VAL
           </small>
-        </article>
+        </div>
       `);
-    }
-  });
-
-  byggUtskrift(kort, 2, "a5");
-}
-
-/* A7 – ÅTTA VALKORT PER A4 */
-
-function skrivUtValkort() {
-  if (valjare.length === 0) {
-    alert("Skapa valkort först!");
-    return;
-  }
-
-  const valnamn =
-    document.getElementById("valnamn").value.trim() || "Lekval";
-
-  const kort = valjare.map(v => `
-    <article class="utskriftskort">
-      <p class="varning">
-        LEKVAL – VALKORT
-      </p>
-
-      <h2>${skydda(valnamn)}</h2>
-
-      <p>Väljare:</p>
-
-      <h2>${skydda(v.namn)}</h2>
-
-      ${streckkodHtml(v.kod)}
-
-      <small>
-        Visa kortet för valförrättaren
-      </small>
-    </article>
-  `);
-
-  byggUtskrift(kort, 8, "a7");
-}
-
-function skrivUt() {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.print();
     });
   });
-}
 
-/* RÖSTNING */
-
-function valjValjare() {
-  if (vallokalStangd) {
-    document.getElementById("valjarstatus").textContent =
-      "Vallokalen är stängd.";
-
+  if (kort.length === 0) {
+    alert("Det finns inga partier att skriva ut.");
     return;
   }
 
-  const kod = document.getElementById("skannaValjare")
-    .value.trim().toUpperCase();
+  byggUtskrift(kort, 2, "a5");
 
-  const v = valjare.find(x =>
-    String(x.kod).toUpperCase() === kod
+  window.print();
+}
+
+
+// ------------------------------------------------------
+// SKRIV UT VALKORT
+// ------------------------------------------------------
+
+function skrivUtValkort() {
+  const kort = valjare.map(v => `
+    <div class="valkort">
+      <h2>LEKVAL</h2>
+
+      <h3>VALKORT</h3>
+
+      <p>
+        Namn:
+        <strong>${skydda(v.namn)}</strong>
+      </p>
+
+      <p>
+        Kod:
+        <strong>${skydda(v.kod)}</strong>
+      </p>
+
+      <div class="streckkod">
+        <svg
+          class="barcode"
+          data-kod="${skydda(v.kod)}">
+        </svg>
+      </div>
+
+      <small>
+        EJ GILTIGT I ALLMÄNNA VAL
+      </small>
+    </div>
+  `);
+
+  if (kort.length === 0) {
+    alert("Det finns inga väljare att skriva ut.");
+    return;
+  }
+
+  byggUtskrift(kort, 8, "a7");
+
+  if (typeof JsBarcode !== "undefined") {
+    document
+      .querySelectorAll(".barcode")
+      .forEach(svg => {
+        const kod = svg.dataset.kod;
+
+        try {
+          JsBarcode(svg, kod, {
+            format: "CODE128",
+            displayValue: true,
+            width: 1.5,
+            height: 40
+          });
+        } catch (fel) {
+          console.error(
+            "Kunde inte skapa streckkod:",
+            fel
+          );
+        }
+      });
+  }
+
+  window.print();
+}
+
+
+// ------------------------------------------------------
+// KONTROLLERA OM ALLA VALTYPER HAR PARTIER
+// ------------------------------------------------------
+
+function allaValtyperHarPartier() {
+  const typer = [
+    "Riksdag",
+    "Region",
+    "Kommun"
+  ];
+
+  return typer.every(typ =>
+    partier.some(p => p.valtyp === typ)
   );
+}
+
+
+// ------------------------------------------------------
+// STARTA RÖSTNING
+// ------------------------------------------------------
+
+function startaRostning() {
+  if (vallokalStangd) {
+    alert("Vallokalen är stängd.");
+    return;
+  }
+
+  if (!allaValtyperHarPartier()) {
+    alert(
+      "Det måste finnas minst ett parti för Riksdag, Region och Kommun."
+    );
+    return;
+  }
+
+  const kodInput =
+    document.getElementById("skannaValjare");
+
+  const kod =
+    kodInput?.value.trim();
+
+  if (!kod) {
+    alert("Skanna eller skriv väljarkoden.");
+    return;
+  }
+
+  const v =
+    valjare.find(x => x.kod === kod);
 
   if (!v) {
-    aktuellValjare = null;
-    aktuellRost = [];
-
-    document.getElementById("valjarstatus").textContent =
-      "Valkortet hittades inte.";
-
+    alert("Väljaren hittades inte.");
     return;
   }
 
   if (v.rostat) {
-    aktuellValjare = null;
-    aktuellRost = [];
-
-    document.getElementById("valjarstatus").textContent =
-      "Valkortet är redan registrerat som röstat.";
-
+    alert("Den här väljaren har redan röstat.");
     return;
   }
 
   aktuellValjare = v;
   aktuellRost = [];
 
-  document.getElementById("valjarstatus").textContent =
-    "Valkort godkänt. Skanna valsedlarna.";
+  const status =
+    document.getElementById("roststatus");
 
-  document.getElementById("skannaValjare").value = "";
-  document.getElementById("skannaValsedel").focus();
+  if (status) {
+    status.textContent =
+      `Väljare: ${v.namn}. Skanna valsedlarna.`;
+  }
+
+  visaRostningsVal();
 }
 
-function registreraRost() {
-  if (vallokalStangd || !aktuellValjare) {
-    document.getElementById("roststatus").textContent =
-      "Skanna ett giltigt valkort först.";
 
+// ------------------------------------------------------
+// VISA RÖSTNINGSVAL
+// ------------------------------------------------------
+
+function visaRostningsVal() {
+  const container =
+    document.getElementById("rostningsalternativ");
+
+  if (!container) {
     return;
   }
 
-  const kod = document.getElementById("skannaValsedel")
-    .value.trim().toUpperCase();
+  const typer = [
+    "Riksdag",
+    "Region",
+    "Kommun"
+  ];
 
-  const parti = partier.find(p =>
-    kodForParti(p).toUpperCase() === kod
-  );
+  container.innerHTML = typer
+    .map(
+      typ => `
+        <div class="rostningsgrupp">
+          <h3>${typ}</h3>
+
+          <select
+            onchange="valjParti('${typ}', this.value)">
+            <option value="">
+              Välj parti
+            </option>
+
+            ${partier
+              .filter(p => p.valtyp === typ)
+              .map(
+                p => `
+                  <option value="${p.id}">
+                    ${skydda(p.symbol)}
+                    ${skydda(p.namn)}
+                  </option>
+                `
+              )
+              .join("")}
+          </select>
+        </div>
+      `
+    )
+    .join("");
+}
+
+
+// ------------------------------------------------------
+// VÄLJ PARTI
+// ------------------------------------------------------
+
+function valjParti(typ, partiId) {
+  if (!partiId) {
+    aktuellRost =
+      aktuellRost.filter(r => r.typ !== typ);
+
+    uppdateraRostStatus();
+    return;
+  }
+
+  const parti =
+    partier.find(p => String(p.id) === String(partiId));
 
   if (!parti) {
-    document.getElementById("roststatus").textContent =
-      "Valsedeln kunde inte hittas.";
-
     return;
   }
 
-  if (aktuellRost.some(r => r.typ === parti.typ)) {
-    document.getElementById("roststatus").textContent =
-      "En valsedel för " + parti.typ.toLowerCase() +
-      " har redan skannats.";
-
-    return;
-  }
+  aktuellRost =
+    aktuellRost.filter(r => r.typ !== typ);
 
   aktuellRost.push({
-    typ: parti.typ,
-    partiId: parti.id
+    typ: typ,
+    partiId: parti.id,
+    partiNamn: parti.namn
   });
 
-  document.getElementById("skannaValsedel").value = "";
-
-  const saknas = typer.filter(typ =>
-    !aktuellRost.some(r => r.typ === typ)
-  );
-
-  document.getElementById("roststatus").textContent =
-    saknas.length
-      ? "Valsedel registrerad. Återstår: " +
-        saknas.join(", ") + "."
-      : "Alla tre valtyper är klara. Tryck på Klart med väljare.";
+  uppdateraRostStatus();
 }
+
+
+// ------------------------------------------------------
+// UPPDATERA RÖSTSTATUS
+// ------------------------------------------------------
+
+function uppdateraRostStatus() {
+  const status =
+    document.getElementById("roststatus");
+
+  if (!status) {
+    return;
+  }
+
+  const antal =
+    aktuellRost.length;
+
+  status.textContent =
+    `Val gjorda: ${antal} av 3.`;
+
+  const knapp =
+    document.getElementById("klarMedValjare");
+
+  if (knapp) {
+    knapp.disabled =
+      antal !== 3;
+  }
+}
+
+
+// ------------------------------------------------------
+// KLAR MED VÄLJARE
+// ------------------------------------------------------
 
 function klarMedValjare() {
   if (!aktuellValjare) {
-    alert("Skanna ett giltigt valkort först.");
+    alert("Ingen väljare är aktiv.");
     return;
   }
 
-  const saknasPartier = typer.filter(typ =>
-    !partier.some(p => p.typ === typ)
-  );
-
-  if (saknasPartier.length) {
+  if (aktuellRost.length !== 3) {
     alert(
-      "Lägg till minst ett parti för varje valtyp: " +
-      saknasPartier.join(", ") + "."
+      "Välj ett parti för Riksdag, Region och Kommun."
     );
-
     return;
   }
 
-  const saknasRoster = typer.filter(typ =>
-    !aktuellRost.some(r => r.typ === typ)
-  );
+  const tid =
+    new Date().toISOString();
 
-  if (saknasRoster.length) {
-    alert(
-      "Skanna en valsedel för varje valtyp. Återstår: " +
-      saknasRoster.join(", ") + "."
-    );
-
-    return;
-  }
-
-  roster.push(...aktuellRost);
+  aktuellRost.forEach(r => {
+    roster.push({
+      id: Date.now() + Math.random(),
+      valjareId: aktuellValjare.id,
+      valjareKod: aktuellValjare.kod,
+      valjareNamn: aktuellValjare.namn,
+      typ: r.typ,
+      partiId: r.partiId,
+      partiNamn: r.partiNamn,
+      tid: tid
+    });
+  });
 
   aktuellValjare.rostat = true;
+
+  spara();
+
+  const namn =
+    aktuellValjare.namn;
 
   aktuellValjare = null;
   aktuellRost = [];
 
-  spara();
-  uppdateraStatus();
-  visaPartier();
-
-  document.getElementById("valjarstatus").textContent =
-    "Klart. Nästa väljare kan komma fram.";
-
-  document.getElementById("roststatus").textContent = "";
-
-  document.getElementById("skannaValjare").focus();
-}
-
-/* VALLokalens STATUS */
-
-function uppdateraStatus() {
-  const status = document.getElementById("rostningsstatus");
-  const knapp = document.getElementById("raknaKnapp");
-
-  const antal = valjare.filter(v => v.rostat).length;
+  const status =
+    document.getElementById("roststatus");
 
   if (status) {
     status.textContent =
-      `${antal} av ${valjare.length} väljare har röstat. ` +
-      (vallokalStangd
-        ? "Vallokalen är stängd."
-        : "Vallokalen är öppen.");
+      `${namn} har röstat klart.`;
   }
 
-  if (knapp) {
-    knapp.disabled = !vallokalStangd;
+  const input =
+    document.getElementById("skannaValjare");
+
+  if (input) {
+    input.value = "";
   }
+
+  const container =
+    document.getElementById("rostningsalternativ");
+
+  if (container) {
+    container.innerHTML = "";
+  }
+
+  uppdateraStatus();
+  visaPartier();
 }
 
+
+// ------------------------------------------------------
+// STÄNG VALLOKAL
+// ------------------------------------------------------
+
 function stangVallokal() {
-  if (!confirm("Är du säker på att stänga vallokalen?")) {
+  if (vallokalStangd) {
+    alert("Vallokalen är redan stängd.");
+    return;
+  }
+
+  if (
+    !confirm(
+      "Stäng vallokalen?\n\n" +
+      "Ingen ny väljare kan rösta förrän vallokalen öppnas igen."
+    )
+  ) {
     return;
   }
 
   vallokalStangd = true;
+
   aktuellValjare = null;
   aktuellRost = [];
 
   spara();
+
   uppdateraStatus();
-  visaPartier();
 }
 
-/* RÖSTRÄKNING */
 
-function raknaRoster() {
+// ------------------------------------------------------
+// ÖPPNA VALLOKAL IGEN
+// ------------------------------------------------------
+
+function oppnaVallokal() {
   if (!vallokalStangd) {
-    alert("Stäng vallokalen innan du räknar rösterna.");
+    alert("Vallokalen är redan öppen.");
     return;
   }
 
-  resultatKlart = true;
-  visaResultat();
+  if (
+    !confirm(
+      "Öppna vallokalen igen?\n\n" +
+      "Redan registrerade röster behålls."
+    )
+  ) {
+    return;
+  }
+
+  vallokalStangd = false;
+  resultatKlart = false;
+
+  aktuellValjare = null;
+  aktuellRost = [];
+
+  const diagram =
+    document.getElementById("diagram");
+
+  if (diagram) {
+    diagram.innerHTML = "";
+  }
+
+  spara();
+  uppdateraStatus();
+
+  const status =
+    document.getElementById("rostningsstatus");
+
+  if (status) {
+    status.textContent =
+      "Vallokalen är öppen igen.";
+  }
 }
 
-function visaResultat() {
-  if (!resultatKlart) return;
 
-  const diagram = document.getElementById("diagram");
+// ------------------------------------------------------
+// STATUS
+// ------------------------------------------------------
 
-  if (!diagram) return;
+function uppdateraStatus() {
+  const status =
+    document.getElementById("rostningsstatus");
 
-  let html = "";
+  if (status) {
+    if (vallokalStangd) {
+      status.textContent =
+        "🔴 Vallokalen är stängd.";
+    } else {
+      status.textContent =
+        "🟢 Vallokalen är öppen.";
+    }
+  }
 
-  typer.forEach(typ => {
-    const grupper = partier.filter(p => p.typ === typ);
+  let oppnaKnapp =
+    document.getElementById("oppnaVallokalKnapp");
 
-    const antal = grupper.reduce((sum, p) =>
-      sum + roster.filter(r =>
-        r.typ === typ && r.partiId === p.id
-      ).length, 0
+  const sida =
+    document.getElementById("rostning");
+
+  if (sida) {
+    if (!oppnaKnapp) {
+      oppnaKnapp =
+        document.createElement("button");
+
+      oppnaKnapp.id =
+        "oppnaVallokalKnapp";
+
+      oppnaKnapp.type =
+        "button";
+
+      oppnaKnapp.textContent =
+        "Öppna vallokalen igen";
+
+      oppnaKnapp.onclick =
+        oppnaVallokal;
+
+      sida.appendChild(oppnaKnapp);
+    }
+
+    oppnaKnapp.style.display =
+      vallokalStangd ? "inline-block" : "none";
+  }
+
+  // ----------------------------------------------------
+  // ÅTERSTÄLL ALLT-KNAPP
+  // ----------------------------------------------------
+
+  let aterstallKnapp =
+    document.getElementById("aterstallAlltKnapp");
+
+  if (sida) {
+    if (!aterstallKnapp) {
+      aterstallKnapp =
+        document.createElement("button");
+
+      aterstallKnapp.id =
+        "aterstallAlltKnapp";
+
+      aterstallKnapp.type =
+        "button";
+
+      aterstallKnapp.textContent =
+        "⚠️ Återställ ALLT";
+
+      aterstallKnapp.onclick =
+        aterstallAllt;
+
+      sida.appendChild(aterstallKnapp);
+    }
+
+    aterstallKnapp.style.display =
+      "inline-block";
+  }
+}
+
+
+// ------------------------------------------------------
+// ÅTERSTÄLL ALLT
+// ------------------------------------------------------
+
+function aterstallAllt() {
+  const godkann =
+    confirm(
+      "⚠️ VARNING – ÅTERSTÄLL ALLT ⚠️\n\n" +
+
+      "Detta kommer att radera ALLT i lekvalet:\n\n" +
+
+      "• Alla partier\n" +
+      "• Alla väljare\n" +
+      "• Alla röster\n" +
+      "• Alla resultat\n" +
+      "• Vallokalens status\n" +
+      "• Alla sparade valuppgifter\n\n" +
+
+      "Det går INTE att ångra.\n\n" +
+
+      "Vill du verkligen radera ALLT?"
     );
 
-    html += `<h3>${skydda(typ)} – ${antal} röster</h3>`;
-
-    grupper.forEach(p => {
-      const rost = roster.filter(r =>
-        r.typ === typ && r.partiId === p.id
-      ).length;
-
-      const procent = antal
-        ? Math.round(rost / antal * 100)
-        : 0;
-
-      html += `
-        <div class="resultatrad">
-          <strong>
-            ${skydda(p.symbol)} ${skydda(p.namn)}: ${rost}
-          </strong>
-
-          <div class="resultatbakgrund">
-            <div class="resultatstapel"
-                 style="width:${procent}%"></div>
-          </div>
-
-          <small>${procent} %</small>
-        </div>
-      `;
-    });
-  });
-
-  diagram.innerHTML =
-    html || "<p>Inga partier finns ännu.</p>";
-}
-
-/* SPARA RESULTAT SOM JSON */
-
-function sparaResultat() {
-  if (!vallokalStangd) {
-    alert("Stäng vallokalen först.");
+  if (!godkann) {
     return;
   }
 
-  const resultat = {
-    val: document.getElementById("valnamn").value,
+  // Radera ALLA kända uppgifter.
+  localStorage.removeItem(PARTIER_KEY);
+  localStorage.removeItem(VALJARE_KEY);
+  localStorage.removeItem(ROSTER_KEY);
+  localStorage.removeItem(VALLokal_KEY);
 
-    datum: new Date().toLocaleString("sv-SE"),
+  // Töm även aktuella variabler.
+  partier = [];
+  valjare = [];
+  roster = [];
 
-    markning: "LEKVAL – EJ GILTIGT I ALLMÄNNA VAL",
+  vallokalStangd = false;
 
-    antalValjare: valjare.length,
+  aktuellValjare = null;
+  aktuellRost = [];
 
-    antalSomRostat:
-      valjare.filter(v => v.rostat).length,
+  resultatKlart = false;
 
-    roster: typer.map(typ => ({
-      valtyp: typ,
+  // Töm diagram.
+  const diagram =
+    document.getElementById("diagram");
 
-      partier: partier
-        .filter(p => p.typ === typ)
-        .map(p => ({
-          parti: p.namn,
+  if (diagram) {
+    diagram.innerHTML = "";
+  }
 
-          roster: roster.filter(r =>
-            r.typ === typ && r.partiId === p.id
-          ).length
-        }))
-    }))
-  };
+  // Töm utskriftsområde.
+  const utskrift =
+    document.getElementById("utskriftsyta");
 
-  const fil = new Blob(
-    [JSON.stringify(resultat, null, 2)],
-    { type: "application/json;charset=utf-8" }
+  if (utskrift) {
+    utskrift.innerHTML = "";
+  }
+
+  // Töm röstningsalternativ.
+  const rostningsalternativ =
+    document.getElementById("rostningsalternativ");
+
+  if (rostningsalternativ) {
+    rostningsalternativ.innerHTML = "";
+  }
+
+  // Töm eventuella formulärfält.
+  [
+    "partinamn",
+    "symbol",
+    "valjarnamn",
+    "valjarkod",
+    "skannaValjare",
+    "skannaValsedel"
+  ].forEach(id => {
+    const input =
+      document.getElementById(id);
+
+    if (input) {
+      input.value = "";
+    }
+  });
+
+  alert(
+    "✅ ALLT har återställts!\n\n" +
+    "Lekvalet är nu helt tomt och redo att börja om."
   );
 
-  const url = URL.createObjectURL(fil);
-
-  const lank = document.createElement("a");
-
-  lank.href = url;
-  lank.download = "lekval-resultat.json";
-
-  document.body.appendChild(lank);
-
-  lank.click();
-  lank.remove();
-
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  // Ladda om sidan för att garantera
+  // att allt börjar från noll.
+  location.reload();
 }
 
-/* STARTA SYSTEMET */
 
-document.addEventListener("DOMContentLoaded", () => {
-  visaPartier();
-  uppdateraStatus();
+// ------------------------------------------------------
+// RESULTAT
+// ------------------------------------------------------
 
-  const kortFalt =
-    document.getElementById("skannaValjare");
+function visaResultat() {
+  const diagram =
+    document.getElementById("diagram");
 
-  const valsedelFalt =
-    document.getElementById("skannaValsedel");
+  if (!diagram) {
+    return;
+  }
 
-  kortFalt.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      valjValjare();
-    }
+  if (roster.length === 0) {
+    diagram.innerHTML =
+      "<p>Det finns inga röster ännu.</p>";
+    return;
+  }
+
+  const typer = [
+    "Riksdag",
+    "Region",
+    "Kommun"
+  ];
+
+  diagram.innerHTML = "";
+
+  typer.forEach(typ => {
+    const rosterForTyp =
+      roster.filter(r => r.typ === typ);
+
+    const rubrik =
+      document.createElement("h3");
+
+    rubrik.textContent =
+      typ;
+
+    diagram.appendChild(rubrik);
+
+    const resultat = {};
+
+    rosterForTyp.forEach(r => {
+      if (!resultat[r.partiNamn]) {
+        resultat[r.partiNamn] = 0;
+      }
+
+      resultat[r.partiNamn]++;
+    });
+
+    const lista =
+      document.createElement("div");
+
+    Object.entries(resultat)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([namn, antal]) => {
+        const rad =
+          document.createElement("div");
+
+        const procent =
+          rosterForTyp.length > 0
+            ? Math.round(
+                (antal / rosterForTyp.length) * 100
+              )
+            : 0;
+
+        rad.innerHTML = `
+          <strong>${skydda(namn)}</strong>
+          – ${antal} röster (${procent}%)
+          <div
+            style="
+              width:${procent}%;
+              min-height:20px;
+              margin:4px 0 10px;
+              background:currentColor;
+            ">
+          </div>
+        `;
+
+        lista.appendChild(rad);
+      });
+
+    diagram.appendChild(lista);
   });
+}
 
-  valsedelFalt.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      registreraRost();
-    }
-  });
-});
+
+// ------------------------------------------------------
+// EXPORTERA RESULTAT
+// ------------------------------------------------------
+
+function exporteraResultat() {
+  const data = {
+    information:
+      "Igelkotts Valsystem – LEKVAL – EJ GILTIGT I ALLMÄNNA VAL",
+
+    datum:
+      new Date().toISOString(),
+
+    partier:
+      partier,
+
+    valjare:
+      valjare,
+
+    roster:
+      roster
+  };
+
+  const json =
+    JSON.stringify(data, null, 2);
+
+  const blob =
+    new Blob(
+      [json],
+      { type: "application/json" }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "igelkotts-valsystem-resultat.json";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+
+// ------------------------------------------------------
+// START
+// ------------------------------------------------------
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    visaPartier();
+    uppdateraStatus();
+  }
+);
